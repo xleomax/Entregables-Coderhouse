@@ -1,0 +1,276 @@
+{
+  "name": "Agente de soporte",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        -16
+      ],
+      "id": "531d779f-5d54-4de0-9b1f-ec4db2c5daa8",
+      "name": "When chat message received",
+      "webhookId": "386b76b3-7fc0-42d6-b81e-81be93dc92e5"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.chatInput }}",
+        "options": {
+          "systemMessage": "[ROL Y ÁMBITO]\nSos un Agente de Triaje de Soporte Técnico para una empresa SaaS B2B. Tu único ámbito es interpretar mensajes desestructurados de usuarios, identificar el problema principal, clasificar la prioridad y registrar un ticket limpio para que el equipo de soporte pueda actuar.\n\nNO tenés autorización para: prometer tiempos de resolución, cerrar tickets, otorgar compensaciones, modificar datos productivos, borrar registros, ejecutar acciones destructivas, brindar asesoramiento legal o comprometer decisiones comerciales.\n\n[OBJETIVO OPERATIVO]\nConvertir cada consulta entrante en un registro estructurado con: nombre del usuario, contacto, empresa, categoría del problema, prioridad, resumen del caso y próxima acción recomendada.\n\n[REGLAS DE USO DE HERRAMIENTAS]\n- Usá la herramienta \"Registrar_Ticket_Soporte_Coder\" SOLO cuando tengas datos mínimos suficientes: contacto del usuario, categoría del problema y descripción del inconveniente.\n- Si falta un dato clave, hacé una única pregunta clara antes de registrar.\n- No inventes información. Si un dato no fue provisto, dejalo vacío o marcá \"No informado\".\n- Clasificá la prioridad como Alta, Media o Baja. Alta aplica si hay bloqueo total, impacto en facturación, caída de servicio, pérdida de datos o cliente estratégico.\n- Si el mensaje mezcla varios problemas, priorizá el problema de mayor impacto y dejá el resto en notas.\n\n[PROTOCOLO DE ESCALAMIENTO / GUARDRAILS]\n- Si el usuario reporta pérdida de datos, caída generalizada, incidente de seguridad, cliente VIP o amenaza de baja, marcá prioridad Alta y recomendá revisión humana inmediata.\n- Si el usuario pide una acción destructiva o sensible, detené el ciclo y respondé: \"El caso requiere revisión humana antes de ejecutar acciones sensibles.\"\n- No envíes correos ni mensajes externos al cliente final. Solo registrá el ticket y generá un resumen operativo.\n\n[ESTILO]\n- Escribí en español rioplatense estándar, claro y profesional.\n- No uses lenguaje inclusivo con terminaciones en -e, -x o @.\n- Sé breve, específico y orientado a la operación.",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        384,
+        -16
+      ],
+      "id": "32894acf-a306-4cda-9f34-b0c5ded227c2",
+      "name": "AI Agent",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "- Usá la herramienta \"Registrar_Ticket_Soporte_Coder\" SOLO cuando tengas datos mínimos suficientes: contacto del usuario, categoría del problema y descripción del inconveniente.\n- Si falta un dato clave, hacé una única pregunta clara antes de registrar.\n- No inventes información. Si un dato no fue provisto, dejalo vacío o marcá \"No informado\".\n- Clasificá la prioridad como Alta, Media o Baja. Alta aplica si hay bloqueo total, impacto en facturación, caída de servicio, pérdida de datos o cliente estratégico.\n- Si el mensaje mezcla varios problemas, priorizá el problema de mayor impacto y dejá el resto en notas.\n",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1Wy4RSKBtyBxe9n68f0tQjk_48LKVDOE_toTeSJogoy8",
+          "mode": "list",
+          "cachedResultName": "Registrar_Ticket_Soporte_Coder",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Wy4RSKBtyBxe9n68f0tQjk_48LKVDOE_toTeSJogoy8/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1Wy4RSKBtyBxe9n68f0tQjk_48LKVDOE_toTeSJogoy8/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Nombre": "={{ $fromAI('nombre', 'Nombre del usuario') }}",
+            "Contacto": "={{ $fromAI('contacto', 'Email o teléfono del usuario') }}",
+            "Empresa": "={{ $fromAI('empresa', 'Nombre de la empresa B2B') }}",
+            "Categoria": "={{ $fromAI('categoria', 'Categoría del problema reportado') }}",
+            "Prioridad": "={{ $fromAI('prioridad', 'Alta, Media o Baja según las reglas') }}",
+            "Resumen": "={{ $fromAI('resumen', 'Resumen breve del caso') }}",
+            "Proxima accion": "={{ $fromAI('proxima_accion', 'Próxima acción recomendada') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Contacto",
+              "displayName": "Contacto",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Empresa",
+              "displayName": "Empresa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Categoria",
+              "displayName": "Categoria",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Prioridad",
+              "displayName": "Prioridad",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Resumen",
+              "displayName": "Resumen",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Proxima accion",
+              "displayName": "Proxima accion",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        176
+      ],
+      "id": "c14f425c-e160-4376-85e0-fa5c0e5536c9",
+      "name": "Append row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YFw3ApBxflQLmVOi",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "C0C1A5GSS77",
+          "mode": "list",
+          "cachedResultName": "reporte-proyecto"
+        },
+        "text": "=*Reporte de Triaje Automático*\n*Resumen Operativo del Agente:*\n{{ $json.output }}",
+        "otherOptions": {}
+      },
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        720,
+        -16
+      ],
+      "id": "6e4d9be2-e737-4da0-83e0-d516dcb4f6f2",
+      "name": "Send a message",
+      "webhookId": "7efb2afd-26cf-4441-bd1c-78d2e2ed500b",
+      "credentials": {
+        "slackOAuth2Api": {
+          "id": "mHAV6nPmn3Mekg0h",
+          "name": "Slack account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        176
+      ],
+      "id": "8788428d-c671-4a7a-a86b-8731bf42e2a0",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "k6RhsWhk4H3JoRpP",
+          "name": "OpenAI account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "8a21cfa6-b209-4b16-a6b3-b8c517605026",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "46b01fdb6bbc820fc1cf6ba0242c74aaf19c0f84865f8bf4a23af54b4ad34ac6"
+  },
+  "nodeGroups": [],
+  "id": "MXlEV3wjlkNgGpDl",
+  "tags": []
+}
