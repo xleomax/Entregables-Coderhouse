@@ -1,0 +1,81 @@
+┌────────────────────────┐
+ │    Telegram Trigger    │  <- 1. Entrada: Mensaje del usuario y chat_id
+ └───────────┬────────────┘
+             │
+             ▼
+ ┌────────────────────────┐
+ │      Edit Fields       │  <- 2. Normalización: original_input y chat_id
+ └───────────┬────────────┘
+             │
+             ▼
+ ┌────────────────────────┐
+ │   Router IA - Groq     │  <- 3. Clasificación: intent, confidence, risk
+ └───────────┬────────────┘
+             │
+             ▼
+ ┌────────────────────────┐
+ │   Code in JavaScript   │  <- 4. Sanitización y validación de contrato JSON
+ └───────────┬────────────┘
+             │
+             ▼
+ ┌────────────────────────┐
+ │  IF: ¿Riesgo / HITL?   │  <- 5. Guardrail: risk == 'HIGH' || confidence == 0.5
+ └─────┬────────────┬─────┘
+       │            │
+ [TRUE: Alto Riesgo]│ [FALSE: Vía Segura]
+       │            │
+       │            ▼
+       │     ┌─────────────┐
+       │     │   Switch    │ <- 6. Enrutador determinista por {{ $json.intent }}
+       │     └──────┬──────┘
+       │            ├──────────────────────────┬──────────────────────────┐
+       │            │ (BILLING)                │ (SALES)                  │ (TECH_SUPPORT)
+       │            ▼                          ▼                          ▼
+       │     ┌──────────────┐           ┌──────────────┐           ┌──────────────┐
+       │     │ Execute Wf:  │           │ Execute Wf:  │           │ Execute Wf:  │
+       │     │ Facturación  │           │    Ventas    │           │   Soporte    │
+       │     │(waitForSub:T)│           │(waitForSub:T)│           │(waitForSub:T)│
+       │     └──────┬───────┘           └──────┬───────┘           └──────┬───────┘
+       │            │                          │                          │
+       │            │   ═══════════════════════╪══════════════════════════╛
+       │            │   (Llamada a lienzos independientes de Workers)
+       │            │
+       │            ▼
+       │     ┌─────────────────────────────────────────────────────────────┐
+       │     │              SUBCIRCUITO DEL WORKER (LIENZO HIJO)           │
+       │     │                                                             │
+       │     │  [ Execute Workflow Trigger ]  <- Entrada limpia            │
+       │     │               ↓                                             │
+       │     │     [ AI Agent Especialista ]  <- Razona y resuelve         │
+       │     │               ↓                                             │
+       │     │    [ Code: try/catch Contrato ] <- Estandariza respuesta    │
+       │     │  { status, worker, respuesta, requires_human: false }       │
+       │     └──────────────────────────────┬──────────────────────────────┘
+       │                                    │
+       │                                    │ (Retorna el JSON al Manager)
+       │                                    ▼
+       │                         [ Continúa la ejecución ]
+       │                                    │
+       ▼                                    │
+ ┌──────────────┐                           │
+ │ Edit Fields1 │                           │
+ │(HITL Config) │                           │
+ └──────┬───────┘                           │
+        ▼                                   │
+ ┌──────────────┐                           │
+ │ Send Message │ (Espera respuesta)        │
+ │  & Wait (TG) │                           │
+ └──────┬───────┘                           │
+        │                                   │
+        └─────────────────┬─────────────────┘
+                          │ (Convergencia de datos)
+                          ▼
+             ┌────────────────────────┐
+             │  Code in JavaScript 1  │ <- 7. Timestamp es-AR + Unificación (10 campos)
+             └───────────┬────────────┘
+                         │
+                         ▼
+             ┌────────────────────────┐
+             │ Registrar en Sheets    │ <- 8. Persistencia: Logs_Multiagente
+             │ (Logs_Multiagente)     │
+             └────────────────────────┘
